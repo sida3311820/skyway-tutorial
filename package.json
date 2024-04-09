@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel doc/index.html --open",
-    "dev": "rm -rf parcel && parcel build doc/index.html --dist-dir parcel --public-url https://sida3311820.github.io/skyway-tutorial/parcel/"
+    "start": "parcel src/index.html --open",
+    "dev": "rm -rf docs && parcel build src/index.html --dist-dir docs --public-url /skyway-tutorial/"
   },
   "author": "",
   "license": "ISC",
