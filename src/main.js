@@ -54,6 +54,27 @@ const token = new SkyWayAuthToken({
     const myId = document.getElementById('my-id');
     const joinButton = document.getElementById('join');
 
+    const audioSelect = document.getElementById('audioSource');
+    const videoSelect = document.getElementById('videoSource');
+
+    await SkyWayStreamFactory.enumerateDevices()
+        .then(function (deviceInfos) {
+            for (var i = 0; i !== deviceInfos.length; ++i) {
+                let deviceInfo = deviceInfos[i];
+                let option = document.createElement('option');
+                option.value = deviceInfo.deviceId;
+                option.text = deviceInfo.label;
+                if (deviceInfo.kind === 'audioinput') {
+                    audioSelect.appendChild(option);
+                } else if (deviceInfo.kind === 'videoinput') {
+                    videoSelect.appendChild(option);
+                }
+            }
+        }).catch(function (error) {
+            console.error('mediaDevices.enumerateDevices() error:', error);
+            return;
+        });
+
     const { audio, video } = await SkyWayStreamFactory.createMicrophoneAudioAndCameraStream(); // 2
 
     video.attach(localVideo); // 3
@@ -62,17 +83,15 @@ const token = new SkyWayAuthToken({
     // ラジオボタン要素を取得
     const radioButtons = document.querySelectorAll('input[name="room-type"]');
     let roomType = document.getElementById('p2p').id;
-    console.log(`default is ${typeof(roomType)}`);
 
     // 各ラジオボタンにイベントリスナーを追加
     radioButtons.forEach(function (radioButton) {
         radioButton.addEventListener('change', function () {
             // 選択されたラジオボタンの値を取得
             roomType = document.querySelector('input[name="room-type"]:checked').id;
-            console.log(`Now is ${roomType}`);
         });
     });
-    
+
     // Create the room
     joinButton.onclick = async () => {
         if (roomNameInput.value === '') return;
