@@ -57,12 +57,40 @@ const token = new SkyWayAuthToken({
     const audioSelect = document.getElementById('audioSource');
     const videoSelect = document.getElementById('videoSource');
 
+    const inputAudioDevices = await SkyWayStreamFactory.enumerateInputAudioDevices();
+    let audio = await SkyWayStreamFactory.createMicrophoneAudioStream({ deviceId: inputAudioDevices[0].id });
+
+    const inputVideoDevices = await SkyWayStreamFactory.enumerateInputVideoDevices();
+    let video = await SkyWayStreamFactory.createCameraVideoStream({ deviceId: inputVideoDevices[0].id });
+
+    // Change audio input source
+    audioSelect.addEventListener("change", async function () {
+        let selectedValue = this.value;
+
+        try {
+            audio = await SkyWayStreamFactory.createMicrophoneAudioStream({ deviceId: selectedValue });
+        } catch (error) {
+            console.error("Error occurred while creating microphone audio stream:", error);
+        }
+    });
+
+    // Change audio input source
+    videoSelect.addEventListener("change", async function () {
+        let selectedValue = this.value;
+
+        try {
+            video = await SkyWayStreamFactory.createMicrophoneAudioStream({ deviceId: selectedValue });
+        } catch (error) {
+            console.error("Error occurred while creating video stream:", error);
+        }
+    });
+
     await SkyWayStreamFactory.enumerateDevices()
         .then(function (deviceInfos) {
             for (var i = 0; i !== deviceInfos.length; ++i) {
                 let deviceInfo = deviceInfos[i];
                 let option = document.createElement('option');
-                option.value = deviceInfo.deviceId;
+                option.value = deviceInfo.id;
                 option.text = deviceInfo.label;
                 if (deviceInfo.kind === 'audioinput') {
                     audioSelect.appendChild(option);
@@ -72,10 +100,9 @@ const token = new SkyWayAuthToken({
             }
         }).catch(function (error) {
             console.error('mediaDevices.enumerateDevices() error:', error);
+
             return;
         });
-
-    const { audio, video } = await SkyWayStreamFactory.createMicrophoneAudioAndCameraStream(); // 2
 
     video.attach(localVideo); // 3
     await localVideo.play(); // 4
@@ -108,10 +135,10 @@ const token = new SkyWayAuthToken({
         const me = await room.join();
         myId.textContent = me.id;
 
-        // Publis audio and video
+        // Publish audio&video
         await me.publish(audio);
-        await me.publish(video);
-
+        await me.publish(video);            
+        
         const subscribeAndAttach = (publication) => {
             // 3
             if (publication.publisher.id === me.id) return;
