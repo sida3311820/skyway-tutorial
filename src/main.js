@@ -53,6 +53,7 @@ const token = new SkyWayAuthToken({
 
     const myId = document.getElementById('my-id');
     const joinButton = document.getElementById('join');
+    const muteButton = document.getElementById('mute');
 
     const audioSelect = document.getElementById('audioSource');
     const videoSelect = document.getElementById('videoSource');
@@ -62,6 +63,8 @@ const token = new SkyWayAuthToken({
 
     const inputVideoDevices = await SkyWayStreamFactory.enumerateInputVideoDevices();
     let video = await SkyWayStreamFactory.createCameraVideoStream({ deviceId: inputVideoDevices[0].id });
+
+    let audioPublication;
 
     // Change audio input source
     audioSelect.addEventListener("change", async function () {
@@ -119,6 +122,32 @@ const token = new SkyWayAuthToken({
         });
     });
 
+    // Mute/Unmute audio device
+    muteButton.onclick = async () => {
+
+        // Do nothing before publishing
+        if (typeof audioPublication === "undefined") return;
+
+        // Mute state
+        let state = audioPublication.state;
+
+        console.log(`first: ${muteButton.innerText}`)
+
+        if (state === "enabled") {
+            // Mute
+            await audioPublication.disable();
+            muteButton.innerText = "unmute"
+        }
+        else if (state === "disabled") {
+            // Unmute
+            await audioPublication.enable();
+            muteButton.innerText = "mute"
+        }
+        else {
+            return;
+        }
+    };
+
     // Create the room
     joinButton.onclick = async () => {
         if (roomNameInput.value === '') return;
@@ -135,10 +164,14 @@ const token = new SkyWayAuthToken({
         const me = await room.join();
         myId.textContent = me.id;
 
-        // Publish audio&video
-        await me.publish(audio);
-        await me.publish(video);            
+        // Publish audio
+        audioPublication = await me.publish(audio);
+        // Mute for default
+        await audioPublication.disable();
         
+        // Publish video
+        await me.publish(video);
+
         const subscribeAndAttach = (publication) => {
             // 3
             if (publication.publisher.id === me.id) return;
