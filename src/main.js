@@ -77,12 +77,12 @@ const token = new SkyWayAuthToken({
         }
     });
 
-    // Change audio input source
+    // Change video input source
     videoSelect.addEventListener("change", async function () {
         let selectedValue = this.value;
 
         try {
-            video = await SkyWayStreamFactory.createMicrophoneAudioStream({ deviceId: selectedValue });
+            video = await SkyWayStreamFactory.createCameraVideoStream({ deviceId: selectedValue});
         } catch (error) {
             console.error("Error occurred while creating video stream:", error);
         }
