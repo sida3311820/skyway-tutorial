@@ -1,4 +1,4 @@
-import { nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayRoom, SkyWayStreamFactory, uuidV4 } from '@skyway-sdk/room';
+import { LocalVideoStream, nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayRoom, SkyWayStreamFactory, uuidV4 } from '@skyway-sdk/room';
 const token = new SkyWayAuthToken({
     jti: uuidV4(),
     iat: nowInSec(),
@@ -124,45 +124,50 @@ const token = new SkyWayAuthToken({
         });
     });
 
+    // screen sharing
     shareScreenButton.onclick = async () => {
         try {
+            // Do nothing before publishing
+            if (typeof audioPublication === "undefined") return;
+
             const captureStream =
                 await navigator.mediaDevices.getDisplayMedia({ video: true });
-            const [displayVideoTrack] = captureStream.getVideoTracks();
-            const newStream = new MediaStream([displayVideoTrack]);
-            
-            videoPublication.stream = newStream;
+            const displayVideoTrack = captureStream.getVideoTracks();
+            const newStream = new LocalVideoStream(displayVideoTrack[0]);
+
+            await videoPublication.replaceStream(newStream);
         } catch (err) {
             console.error(`Error: ${err}`);
         };
-
-        return;
     };
 
 
     // Mute/Unmute audio device
     muteButton.onclick = async () => {
-
         // Do nothing before publishing
         if (typeof audioPublication === "undefined") return;
 
-        // Mute state
-        let state = audioPublication.state;
+        try {
+            // Mute state
+            let state = audioPublication.state;
 
-        console.log(`first: ${muteButton.innerText}`)
+            console.log(`first: ${muteButton.innerText}`)
 
-        if (state === "enabled") {
-            // Mute
-            await audioPublication.disable();
-            muteButton.innerText = "unmute"
-        }
-        else if (state === "disabled") {
-            // Unmute
-            await audioPublication.enable();
-            muteButton.innerText = "mute"
-        }
-        else {
-            return;
+            if (state === "enabled") {
+                // Mute
+                await audioPublication.disable();
+                muteButton.innerText = "unmute"
+            }
+            else if (state === "disabled") {
+                // Unmute
+                await audioPublication.enable();
+                muteButton.innerText = "mute"
+            }
+            else {
+                return;
+            }
+        } catch (error) {
+            console.error(`Error: ${err}`);
         }
     };
 
@@ -170,61 +175,66 @@ const token = new SkyWayAuthToken({
     joinButton.onclick = async () => {
         if (roomNameInput.value === '') return;
 
-        const context = await SkyWayContext.Create(token);
+        try {
 
-        // Search room or create
-        const room = await SkyWayRoom.FindOrCreate(context, {
-            type: roomType,
-            name: roomNameInput.value,
-        });
+            const context = await SkyWayContext.Create(token);
 
-        // Save the member
-        const me = await room.join();
-        myId.textContent = me.id;
+            // Search room or create
+            const room = await SkyWayRoom.FindOrCreate(context, {
+                type: roomType,
+                name: roomNameInput.value,
+            });
 
-        // Publish audio
-        audioPublication = await me.publish(audio);
-        // Mute for default
-        await audioPublication.disable();
-        
-        // Publish video
-        videoPublication = await me.publish(video);
+            // Save the member
+            const me = await room.join();
+            myId.textContent = me.id;
 
-        const subscribeAndAttach = (publication) => {
-            // 3
-            if (publication.publisher.id === me.id) return;
+            // Publish audio
+            audioPublication = await me.publish(audio);
+            // Mute for default
+            await audioPublication.disable();
 
-            const subscribeButton = document.createElement('button'); // 3-1
-            subscribeButton.textContent = `${publication.publisher.id}: ${publication.contentType}`;
+            // Publish video
+            videoPublication = await me.publish(video);
 
-            buttonArea.appendChild(subscribeButton);
+            const subscribeAndAttach = (publication) => {
+                // 3
+                if (publication.publisher.id === me.id) return;
 
-            subscribeButton.onclick = async () => {
-                // 3-2
-                const { stream } = await me.subscribe(publication.id); // 3-2-1
+                const subscribeButton = document.createElement('button'); // 3-1
+                subscribeButton.textContent = `${publication.publisher.id}: ${publication.contentType}`;
 
-                let newMedia; // 3-2-2
-                switch (stream.track.kind) {
-                    case 'video':
-                        newMedia = document.createElement('video');
-                        newMedia.playsInline = true;
-                        newMedia.autoplay = true;
-                        break;
-                    case 'audio':
-                        newMedia = document.createElement('audio');
-                        newMedia.controls = true;
-                        newMedia.autoplay = true;
-                        break;
-                    default:
-                        return;
-                }
-                stream.attach(newMedia); // 3-2-3
-                remoteMediaArea.appendChild(newMedia);
+                buttonArea.appendChild(subscribeButton);
+
+                subscribeButton.onclick = async () => {
+                    // 3-2
+                    const { stream } = await me.subscribe(publication.id); // 3-2-1
+
+                    let newMedia; // 3-2-2
+                    switch (stream.track.kind) {
+                        case 'video':
+                            newMedia = document.createElement('video');
+                            newMedia.playsInline = true;
+                            newMedia.autoplay = true;
+                            break;
+                        case 'audio':
+                            newMedia = document.createElement('audio');
+                            newMedia.controls = true;
+                            newMedia.autoplay = true;
+                            break;
+                        default:
+                            return;
+                    }
+                    stream.attach(newMedia); // 3-2-3
+                    remoteMediaArea.appendChild(newMedia);
+                };
             };
-        };
 
-        room.publications.forEach(subscribeAndAttach); // 1
-        room.onStreamPublished.add((e) => subscribeAndAttach(e.publication));
+            room.publications.forEach(subscribeAndAttach); // 1
+            room.onStreamPublished.add((e) => subscribeAndAttach(e.publication));
+        } catch (error) {
+            console.error(`Error: ${err}`);
+        }
     };
 })(); // 1
 
