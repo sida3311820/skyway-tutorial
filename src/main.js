@@ -135,7 +135,7 @@ const token = new SkyWayAuthToken({
             const displayVideoTrack = captureStream.getVideoTracks();
             const newStream = new LocalVideoStream(displayVideoTrack[0]);
 
-            await videoPublication.replaceStream(newStream);
+            await videoPublication.replaceStream(newStream, { releaseOldStream: false });
         } catch (err) {
             console.error(`Error: ${err}`);
         };
