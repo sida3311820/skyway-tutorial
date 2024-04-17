@@ -54,6 +54,7 @@ const token = new SkyWayAuthToken({
     const myId = document.getElementById('my-id');
     const joinButton = document.getElementById('join');
     const muteButton = document.getElementById('mute');
+    const shareScreenButton = document.getElementById('shareScreen')
 
     const audioSelect = document.getElementById('audioSource');
     const videoSelect = document.getElementById('videoSource');
@@ -65,6 +66,7 @@ const token = new SkyWayAuthToken({
     let video = await SkyWayStreamFactory.createCameraVideoStream({ deviceId: inputVideoDevices[0].id });
 
     let audioPublication;
+    let videoPublication;
 
     // Change audio input source
     audioSelect.addEventListener("change", async function () {
@@ -82,7 +84,7 @@ const token = new SkyWayAuthToken({
         let selectedValue = this.value;
 
         try {
-            video = await SkyWayStreamFactory.createCameraVideoStream({ deviceId: selectedValue});
+            video = await SkyWayStreamFactory.createCameraVideoStream({ deviceId: selectedValue });
         } catch (error) {
             console.error("Error occurred while creating video stream:", error);
         }
@@ -121,6 +123,22 @@ const token = new SkyWayAuthToken({
             roomType = document.querySelector('input[name="room-type"]:checked').id;
         });
     });
+
+    shareScreenButton.onclick = async () => {
+        try {
+            const captureStream =
+                await navigator.mediaDevices.getDisplayMedia({ video: true });
+            const [displayVideoTrack] = captureStream.getVideoTracks();
+            const newStream = new MediaStream([displayVideoTrack]);
+            
+            videoPublication.stream = newStream;
+        } catch (err) {
+            console.error(`Error: ${err}`);
+        };
+
+        return;
+    };
+
 
     // Mute/Unmute audio device
     muteButton.onclick = async () => {
@@ -170,7 +188,7 @@ const token = new SkyWayAuthToken({
         await audioPublication.disable();
         
         // Publish video
-        await me.publish(video);
+        videoPublication = await me.publish(video);
 
         const subscribeAndAttach = (publication) => {
             // 3
