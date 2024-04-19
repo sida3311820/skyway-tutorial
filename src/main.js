@@ -130,14 +130,23 @@ const token = new SkyWayAuthToken({
             // Do nothing before publishing
             if (typeof audioPublication === "undefined") return;
 
-            const captureStream =
-                await navigator.mediaDevices.getDisplayMedia({ video: true });
-            const displayVideoTrack = captureStream.getVideoTracks();
-            const newStream = new LocalVideoStream(displayVideoTrack[0]);
+            // ①生のWeb-RTCで実装している(v2?)
+            // const captureStream =
+            //     await navigator.mediaDevices.getDisplayMedia({ video: true });
+            // const displayVideoTrack = captureStream.getVideoTracks();
+            // const newStream = new LocalVideoStream(displayVideoTrack[0]);
 
-            await videoPublication.replaceStream(newStream, { releaseOldStream: false });
-        } catch (err) {
-            console.error(`Error: ${err}`);
+            // await videoPublication.replaceStream(newStream, { releaseOldStream: false });
+
+            // ②v3
+            const newStream = await SkyWayStreamFactory.createDisplayStreams();
+
+            await videoPublication.replaceStream(newStream.video, { releaseOldStream: false });
+
+            // TODO: 自分のカメラを映したまま画面共有を行う
+
+        } catch (error) {
+            console.error(`Error: ${error}`);
         };
     };
 
@@ -167,7 +176,7 @@ const token = new SkyWayAuthToken({
                 return;
             }
         } catch (error) {
-            console.error(`Error: ${err}`);
+            console.error(`Error: ${error}`);
         }
     };
 
@@ -233,7 +242,7 @@ const token = new SkyWayAuthToken({
             room.publications.forEach(subscribeAndAttach); // 1
             room.onStreamPublished.add((e) => subscribeAndAttach(e.publication));
         } catch (error) {
-            console.error(`Error: ${err}`);
+            console.error(`Error: ${error}`);
         }
     };
 })(); // 1
