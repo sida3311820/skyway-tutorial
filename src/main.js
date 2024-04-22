@@ -7,6 +7,7 @@ const token = new SkyWayAuthToken({
         app: {
             id: '244804f8-cdc4-484e-a8f9-6fbf99227b01',
             turn: true,
+            analytics: true,
             actions: ['read'],
             channels: [
                 {
@@ -62,8 +63,18 @@ const token = new SkyWayAuthToken({
     const inputAudioDevices = await SkyWayStreamFactory.enumerateInputAudioDevices();
     let audio = await SkyWayStreamFactory.createMicrophoneAudioStream({ deviceId: inputAudioDevices[0].id });
 
+    const cameraVideoStreamDefaultHeight = 640;
+    const cameraVideoStreamDefaultWidth = 360;
+    const cameraVideoStreamDefaultFrameRate = 15;
+
+
     const inputVideoDevices = await SkyWayStreamFactory.enumerateInputVideoDevices();
-    let video = await SkyWayStreamFactory.createCameraVideoStream({ deviceId: inputVideoDevices[0].id });
+    let video = await SkyWayStreamFactory.createCameraVideoStream({
+        deviceId: inputVideoDevices[0].id,
+        height: cameraVideoStreamDefaultHeight,
+        width: cameraVideoStreamDefaultWidth,
+        frameRate: cameraVideoStreamDefaultFrameRate
+    });
 
     let audioPublication;
     let videoPublication;
@@ -84,7 +95,12 @@ const token = new SkyWayAuthToken({
         let selectedValue = this.value;
 
         try {
-            video = await SkyWayStreamFactory.createCameraVideoStream({ deviceId: selectedValue });
+            video = await SkyWayStreamFactory.createCameraVideoStream({
+                deviceId: selectedValue,
+                height: cameraVideoStreamDefaultHeight,
+                width: cameraVideoStreamDefaultWidth,
+                frameRate: cameraVideoStreamDefaultFrameRate
+            });
         } catch (error) {
             console.error("Error occurred while creating video stream:", error);
         }
@@ -160,8 +176,6 @@ const token = new SkyWayAuthToken({
             // Mute state
             let state = audioPublication.state;
 
-            console.log(`first: ${muteButton.innerText}`)
-
             if (state === "enabled") {
                 // Mute
                 await audioPublication.disable();
@@ -199,12 +213,33 @@ const token = new SkyWayAuthToken({
             myId.textContent = me.id;
 
             // Publish audio
-            audioPublication = await me.publish(audio);
+            audioPublication = await me.publish(
+                audio,
+                {
+                    maxSubscribers: 50
+                }
+            );
             // Mute for default
             await audioPublication.disable();
 
             // Publish video
-            videoPublication = await me.publish(video);
+            videoPublication = await me.publish(
+                video,
+                {
+                    maxSubscribers: 50,
+                    encodings: [
+                        {
+                            scaleResolutionDownBy: 4,
+                            id: 'low',
+                            maxBitrate: 100_000
+                        },
+                        {
+                            scaleResolutionDownBy: 1,
+                            id: 'high',
+                            maxBitrate: 400_000
+                        }
+                    ],
+                });
 
             const subscribeAndAttach = (publication) => {
                 // 3
@@ -217,7 +252,7 @@ const token = new SkyWayAuthToken({
 
                 subscribeButton.onclick = async () => {
                     // 3-2
-                    const { stream } = await me.subscribe(publication.id); // 3-2-1
+                    const { stream } = await me.subscribe(publication, { preferredEncodingId: 'low' }); // 3-2-1
 
                     let newMedia; // 3-2-2
                     switch (stream.track.kind) {

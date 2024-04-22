@@ -11,32 +11,40 @@
 </head>
 
 <body>
-  <div class="uk-position-center">
-    <p>ID: <span id="my-id"></span></p>
-    <div class="select">
-      <label for="audioSource">Audio input source: </label><select id="audioSource"></select>
-    </div>
-    <div class="select">
-      <label for="videoSource">Video source: </label><select id="videoSource"></select>
-    </div>
-    <div>
-      room name: <input id="room-name" type="text" />
-      <div class="uk-margin uk-grid-small uk-child-width-auto uk-grid">
-        <label><input id="p2p" class="uk-radio" type="radio" name="room-type" checked>P2P</label>
-        <label><input id="sfu" class="uk-radio" type="radio" name="room-type">SFU</label>
+  <!-- <div class="uk-position-center"> -->
+    <div uk-grid>
+      <div>
+        <p>ID: <span id="my-id"></span></p>
+        <div class="select">
+          <label for="audioSource">Audio input source: </label><select id="audioSource"></select>
+        </div>
+        <div class="select">
+          <label for="videoSource">Video source: </label><select id="videoSource"></select>
+        </div>
+        <div>
+          room name: <input id="room-name" type="text" />
+          <div class="uk-margin uk-grid-small uk-child-width-auto uk-grid">
+            <label><input id="p2p" class="uk-radio" type="radio" name="room-type" checked>P2P</label>
+            <label><input id="sfu" class="uk-radio" type="radio" name="room-type">SFU</label>
+          </div>
+          <button id="join">join</button>
+        </div>
       </div>
-      <button id="join">join</button>
+      <div>
+        <video id="local-video" width="400px" muted playsinline></video>
+        <div>
+          <button id="mute">unmute</button>
+        </div>
+        <div>
+          <button id="shareScreen">share screen</button>
+        </div>
+      </div>
+      <div>
+        <div id="button-area"></div>
+        <div id="remote-media-area"></div>
+      </div>
     </div>
-    <video id="local-video" width="400px" muted playsinline></video>
-    <div>
-      <button id="mute">unmute</button>
-    </div>
-    <div>
-      <button id="shareScreen">share screen</button>
-    </div>
-    <div id="button-area"></div>
-    <div id="remote-media-area"></div>
-  </div>
+  <!-- </div> -->
   <script type="module" src="./main.js"></script>
 </body>
 
