@@ -231,12 +231,14 @@ const token = new SkyWayAuthToken({
                         {
                             scaleResolutionDownBy: 4,
                             id: 'low',
-                            maxBitrate: 100_000
+                            maxBitrate: 80_000,
+                            maxFramerate: 5
                         },
                         {
                             scaleResolutionDownBy: 1,
                             id: 'high',
-                            maxBitrate: 400_000
+                            maxBitrate: 400_000,
+                            maxFramerate: 30
                         }
                     ],
                 });
