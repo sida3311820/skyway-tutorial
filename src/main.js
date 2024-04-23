@@ -260,6 +260,8 @@ const token = new SkyWayAuthToken({
                             newMedia = document.createElement('video');
                             newMedia.playsInline = true;
                             newMedia.autoplay = true;
+                            newMedia.id = stream.id;
+                            newMedia.onclick = switchEncodingSetting;
                             break;
                         case 'audio':
                             newMedia = document.createElement('audio');
@@ -272,6 +274,18 @@ const token = new SkyWayAuthToken({
                     stream.attach(newMedia); // 3-2-3
                     remoteMediaArea.appendChild(newMedia);
                 };
+            };
+
+            // Switch the encoding setting if you click the video
+            const switchEncodingSetting = async (e) => {
+                const videoId = e.srcElement.id;
+                const subscription = room.subscriptions.find((subscription) => subscription.stream.id == videoId);
+
+                if (subscription.preferredEncoding === 'high') {
+                    subscription.changePreferredEncoding('low');
+                } else if (subscription.preferredEncoding === 'low') {
+                    subscription.changePreferredEncoding('high');
+                }
             };
 
             room.publications.forEach(subscribeAndAttach); // 1
