@@ -281,7 +281,7 @@ const token = new SkyWayAuthToken({
             // Switch the encoding setting if you click the video
             const switchEncodingSetting = async (e) => {
                 const videoId = e.srcElement.id;
-                const subscription = room.subscriptions.find((subscription) => subscription.stream.id == videoId);
+                const subscription = me.subscriptions.find((subscription) => subscription.stream.id == videoId);
 
                 if (subscription.preferredEncoding === 'high') {
                     subscription.changePreferredEncoding('low');
