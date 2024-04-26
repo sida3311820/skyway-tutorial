@@ -1,4 +1,7 @@
 import { LocalVideoStream, nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayRoom, SkyWayStreamFactory, uuidV4 } from '@skyway-sdk/room';
+import { BlurBackground, VirtualBackground } from 'skyway-video-processors';
+import imageURL from './img/green.png';
+
 const token = new SkyWayAuthToken({
     jti: uuidV4(),
     iat: nowInSec(),
@@ -59,6 +62,12 @@ const token = new SkyWayAuthToken({
 
     const audioSelect = document.getElementById('audioSource');
     const videoSelect = document.getElementById('videoSource');
+    const backgroundSelect = document.getElementById("backgroundSelect");;
+
+    const virtualBackgroundProcessor = new VirtualBackground({ image: imageURL });
+    const blurBackgroundProcessor = new BlurBackground();
+    await virtualBackgroundProcessor.initialize();
+    await blurBackgroundProcessor.initialize();
 
     const inputAudioDevices = await SkyWayStreamFactory.enumerateInputAudioDevices();
     let audio = await SkyWayStreamFactory.createMicrophoneAudioStream({ deviceId: inputAudioDevices[0].id });
@@ -69,11 +78,12 @@ const token = new SkyWayAuthToken({
 
 
     const inputVideoDevices = await SkyWayStreamFactory.enumerateInputVideoDevices();
-    let video = await SkyWayStreamFactory.createCameraVideoStream({
+    let video = await SkyWayStreamFactory.createCustomVideoStream(virtualBackgroundProcessor, {
         deviceId: inputVideoDevices[0].id,
         height: cameraVideoStreamDefaultHeight,
         width: cameraVideoStreamDefaultWidth,
-        frameRate: cameraVideoStreamDefaultFrameRate
+        frameRate: cameraVideoStreamDefaultFrameRate,
+        stopTrackWhenDisabled: true,
     });
 
     let audioPublication;
@@ -95,11 +105,12 @@ const token = new SkyWayAuthToken({
         let selectedValue = this.value;
 
         try {
-            video = await SkyWayStreamFactory.createCameraVideoStream({
+            video = await SkyWayStreamFactory.createCustomVideoStream(virtualBackgroundProcessor, {
                 deviceId: selectedValue,
                 height: cameraVideoStreamDefaultHeight,
                 width: cameraVideoStreamDefaultWidth,
-                frameRate: cameraVideoStreamDefaultFrameRate
+                frameRate: cameraVideoStreamDefaultFrameRate,
+                stopTrackWhenDisabled: true
             });
         } catch (error) {
             console.error("Error occurred while creating video stream:", error);

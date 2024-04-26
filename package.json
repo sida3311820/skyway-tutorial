@@ -5,12 +5,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel src/index.html --open",
-    "dev": "rm -rf docs && parcel build src/index.html --dist-dir docs --public-url /skyway-tutorial/"
+    "dev": "rm -rf .parcel-cache && rm -rf docs && parcel build src/index.html --dist-dir docs --public-url /skyway-tutorial/"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@skyway-sdk/room": "^1.7.1"
+    "@skyway-sdk/room": "^1.7.1",
+    "skyway-video-processors": "^1.0.1"
   },
   "devDependencies": {
     "buffer": "^6.0.3",
