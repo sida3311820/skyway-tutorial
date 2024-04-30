@@ -1,6 +1,7 @@
 import { LocalVideoStream, nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayRoom, SkyWayStreamFactory, uuidV4 } from '@skyway-sdk/room';
 import { BlurBackground, VirtualBackground } from 'skyway-video-processors';
 import imageURL from './img/green.png';
+import 'dotenv/config'
 
 // Video and audio
 (async () => {
@@ -9,7 +10,7 @@ import imageURL from './img/green.png';
     const memberName = document.getElementById('member-name-text').value;
     
     // POST request to auth server.
-    const response = await fetch('https://skyway-tutorial-server.onrender.com/authenticate', {
+    const response = await fetch(`${process.env.API_TOKEN_AUTHENTICATION_DOMAIN}/authenticate`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
