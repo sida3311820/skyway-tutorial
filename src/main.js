@@ -2,53 +2,82 @@ import { LocalVideoStream, nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayRoom,
 import { BlurBackground, VirtualBackground } from 'skyway-video-processors';
 import imageURL from './img/green.png';
 
-const token = new SkyWayAuthToken({
-    jti: uuidV4(),
-    iat: nowInSec(),
-    exp: nowInSec() + 60 * 60 * 24,
-    scope: {
-        app: {
-            id: '244804f8-cdc4-484e-a8f9-6fbf99227b01',
-            turn: true,
-            analytics: true,
-            actions: ['read'],
-            channels: [
-                {
-                    id: '*',
-                    name: '*',
-                    actions: ['write'],
-                    members: [
-                        {
-                            id: '*',
-                            name: '*',
-                            actions: ['write'],
-                            publication: {
-                                actions: ['write'],
-                            },
-                            subscription: {
-                                actions: ['write'],
-                            },
-                        },
-                    ],
-                    sfuBots: [
-                        {
-                            actions: ['write'],
-                            forwardings: [
-                                {
-                                    actions: ['write'],
-                                },
-                            ],
-                        },
-                    ],
-                },
-            ],
-        },
-    },
-}).encode('joicwMieFh0hxq+8EoNZCNoH5x4qIXS3zYm9lG2zDcA=');
+
+// const token = new SkyWayAuthToken({
+//     jti: uuidV4(),
+//     iat: nowInSec(),
+//     exp: nowInSec() + 60 * 60 * 24,
+//     scope: {
+//         app: {
+//             id: '244804f8-cdc4-484e-a8f9-6fbf99227b01',
+//             turn: true,
+//             analytics: true,
+//             actions: ['read'],
+//             channels: [
+//                 {
+//                     id: '*',
+//                     name: '*',
+//                     actions: ['write'],
+//                     members: [
+//                         {
+//                             id: '*',
+//                             name: '*',
+//                             actions: ['write'],
+//                             publication: {
+//                                 actions: ['write'],
+//                             },
+//                             subscription: {
+//                                 actions: ['write'],
+//                             },
+//                         },
+//                     ],
+//                     sfuBots: [
+//                         {
+//                             actions: ['write'],
+//                             forwardings: [
+//                                 {
+//                                     actions: ['write'],
+//                                 },
+//                             ],
+//                         },
+//                     ],
+//                 },
+//             ],
+//         },
+//     },
+// }).encode('joicwMieFh0hxq+8EoNZCNoH5x4qIXS3zYm9lG2zDcA=');
 
 
 // Video and audio
 (async () => {
+    let token;
+    const channelName = document.getElementById('channel-name-text').value;
+    const memberName = document.getElementById('member-name-text').value;
+    
+    // POST request to auth server.
+    const response = await fetch('https://sida3311820.github.io/skyway-tutorial-server/authenticate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            sessionToken: '4CXS0f19nvMJBYK05o3toTWtZF5Lfd2t6Ikr2lID',
+            channelName: channelName,
+            memberName: memberName
+        })
+    });
+
+    if (response.ok) {
+        const credential = await response.json();
+        console.log(credential);
+        token = credential.authToken;
+        //   document.querySelector('#result').textContent = JSON.stringify(credential, null, 2);
+        //   document.querySelector('#get-btn').textContent = "Done!"
+    } else {
+        alert("Request failed: " + response.statusText);
+    }
+
+
     // 1
     const localVideo = document.getElementById('local-video');
     const buttonArea = document.getElementById('button-area');
@@ -215,7 +244,11 @@ const token = new SkyWayAuthToken({
 
         try {
 
+            console.log(token);
+
             const context = await SkyWayContext.Create(token);
+
+            console.log(context);
 
             // Search room or create
             const room = await SkyWayRoom.FindOrCreate(context, {
