@@ -76,15 +76,17 @@ const token = new SkyWayAuthToken({
     const cameraVideoStreamDefaultWidth = 360;
     const cameraVideoStreamDefaultFrameRate = 15;
 
-
     const inputVideoDevices = await SkyWayStreamFactory.enumerateInputVideoDevices();
-    let video = await SkyWayStreamFactory.createCustomVideoStream(virtualBackgroundProcessor, {
-        deviceId: inputVideoDevices[0].id,
-        height: cameraVideoStreamDefaultHeight,
-        width: cameraVideoStreamDefaultWidth,
-        frameRate: cameraVideoStreamDefaultFrameRate,
-        stopTrackWhenDisabled: true,
-    });
+    let video = await SkyWayStreamFactory.createCustomVideoStream(virtualBackgroundProcessor,
+        {
+            constraints: {
+                deviceId: inputVideoDevices[0].id,
+                height: cameraVideoStreamDefaultHeight,
+                width: cameraVideoStreamDefaultWidth,
+                frameRate: cameraVideoStreamDefaultFrameRate,
+            },
+            stopTrackWhenDisabled: true,
+        });
 
     let audioPublication;
     let videoPublication;
@@ -106,10 +108,12 @@ const token = new SkyWayAuthToken({
 
         try {
             video = await SkyWayStreamFactory.createCustomVideoStream(virtualBackgroundProcessor, {
-                deviceId: selectedValue,
-                height: cameraVideoStreamDefaultHeight,
-                width: cameraVideoStreamDefaultWidth,
-                frameRate: cameraVideoStreamDefaultFrameRate,
+                constraints: {
+                    deviceId: selectedValue,
+                    height: cameraVideoStreamDefaultHeight,
+                    width: cameraVideoStreamDefaultWidth,
+                    frameRate: cameraVideoStreamDefaultFrameRate,
+                },
                 stopTrackWhenDisabled: true
             });
         } catch (error) {
