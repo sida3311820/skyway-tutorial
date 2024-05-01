@@ -8,6 +8,7 @@ packages/**/reports
 packages/**/coverage
 *.tgz
 server
+.env
 
 # internal
 .github/dependabot.yml
