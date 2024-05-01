@@ -24,7 +24,6 @@ import 'dotenv/config'
 
     if (response.ok) {
         const credential = await response.json();
-        console.log(credential);
         token = credential.authToken;
     } else {
         alert("Request failed: " + response.statusText);
@@ -196,12 +195,7 @@ import 'dotenv/config'
         if (roomNameInput.value === '') return;
 
         try {
-
-            console.log(token);
-
             const context = await SkyWayContext.Create(token);
-
-            console.log(context);
 
             // Search room or create
             const room = await SkyWayRoom.FindOrCreate(context, {
