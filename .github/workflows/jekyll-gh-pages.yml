@@ -43,6 +43,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+      API_TOKEN_AUTHENTICATION_DOMAIN: ${{ secrets.API_TOKEN_AUTHENTICATION_DOMAIN }}
     runs-on: ubuntu-latest
     needs: build
     steps:
